@@ -1,0 +1,71 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account information for comments and likes",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "createdAt"]
+    },
+    "Theory": {
+      "title": "Conspiracy Theory",
+      "description": "A theory posted by a user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "content", "createdAt"]
+    },
+    "Comment": {
+      "title": "Group Comment",
+      "description": "A comment left by a user on a specific group's page",
+      "type": "object",
+      "properties": {
+        "groupId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["groupId", "userId", "userName", "content", "createdAt"]
+    },
+    "Like": {
+      "title": "Group Like",
+      "description": "A 'like' given to a group by a user",
+      "type": "object",
+      "properties": {
+        "groupId": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["groupId", "userId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Public profiles of users"
+    },
+    "/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "All comments posted in the app"
+    },
+    "/likes/{likeId}": {
+      "schema": "Like",
+      "description": "Likes given by users to groups (usually userId_groupId)"
+    },
+    "/theories/{theoryId}": {
+      "schema": "Theory",
+      "description": "Conspiracy theories shared by the community"
+    }
+  }
+}

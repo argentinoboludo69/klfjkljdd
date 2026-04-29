@@ -1,0 +1,104 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (request.auth.token.email == "gustvxlz1@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- USERS ---
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if false;
+      allow create, update: if isSignedIn() && isOwner(userId) && isValidUser(incoming()) && 
+        request.auth.token.email_verified == true;
+      
+      function isValidUser(data) {
+        return data.keys().hasAll(['name', 'email', 'createdAt']) && 
+               data.name is string && data.name.size() >= 2 &&
+               data.email is string && data.email == request.auth.token.email &&
+               (data.get('photoURL', '') == '' || (data.photoURL is string && data.photoURL.size() <= 1000)) &&
+               data.createdAt == request.time;
+      }
+    }
+
+    // --- COMMENTS ---
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.auth.token.email_verified == true && 
+        isValidComment(incoming());
+      allow delete: if isAdmin() || (isSignedIn() && existing().userId == request.auth.uid);
+      
+      function isValidComment(data) {
+        return data.keys().hasAll(['groupId', 'userId', 'userName', 'content', 'createdAt']) &&
+               data.groupId is string &&
+               data.userId == request.auth.uid &&
+               data.content is string && data.content.size() >= 1 && data.content.size() <= 1000 &&
+               data.createdAt == request.time;
+      }
+    }
+
+    // --- LIKES ---
+    match /likes/{likeId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isValidLike(incoming()) && 
+        likeId == request.auth.uid + "_" + incoming().groupId;
+      allow delete: if isAdmin() || (isSignedIn() && existing().userId == request.auth.uid);
+
+      function isValidLike(data) {
+        return data.keys().hasAll(['groupId', 'userId', 'createdAt']) &&
+               data.keys().size() == 3 &&
+               data.groupId is string &&
+               data.userId == request.auth.uid &&
+               data.createdAt == request.time;
+      }
+    }
+
+    // --- THEORIES ---
+    match /theories/{theoryId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.auth.token.email_verified == true && 
+        isValidTheory(incoming());
+      allow delete: if isAdmin() || (isSignedIn() && existing().userId == request.auth.uid);
+      
+      function isValidTheory(data) {
+        return data.keys().hasAll(['userId', 'userName', 'content', 'createdAt']) &&
+               data.userId == request.auth.uid &&
+               (data.get('userPhoto', '') == '' || data.userPhoto is string) &&
+               data.content is string && data.content.size() >= 1 && data.content.size() <= 500 &&
+               data.createdAt == request.time;
+      }
+    }
+
+    // --- CONFIG ---
+    match /config/global {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
