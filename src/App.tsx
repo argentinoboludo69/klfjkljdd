@@ -861,7 +861,7 @@ export default function App() {
   };
 
   const deleteTheory = async (id: string) => {
-    if (!isAdmin) return;
+    if (!isAdmin && !isAuthAdmin) return;
     try {
       await deleteDoc(doc(db, 'theories', id));
       alert("Teoria removida pelo administrador");
@@ -871,7 +871,7 @@ export default function App() {
   };
 
   const deleteComment = async (groupId: string, commentId: string) => {
-    if (!isAdmin) return;
+    if (!isAdmin && !isAuthAdmin) return;
     try {
       await deleteDoc(doc(db, 'comments', commentId));
       playSound('close');
@@ -1830,7 +1830,7 @@ export default function App() {
                                         <p className="font-mono text-[10px] font-black text-fake-red uppercase">{theory.userName}</p>
                                         <span className="text-[10px] font-mono text-neutral-500">• {new Date(theory.createdAt?.seconds * 1000).toLocaleDateString()}</span>
                                     </div>
-                                    {isAdmin && (
+                                    {(isAdmin || isAuthAdmin) && (
                                         <button 
                                             onClick={() => deleteTheory(theory.id)}
                                             className="p-2 text-neutral-500 hover:text-red-500 transition-colors"
@@ -2257,55 +2257,6 @@ export default function App() {
                                 </div>
 
                                 <div className="p-8 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20">
-                                    {/* Global Config - Always visible at top of tabs or as main entry */}
-                                    {adminTab === 'matérias' && (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12 border-b border-white/10 pb-12">
-                                                <div className={cn(
-                                                    "p-4 border-2 transition-all flex items-center justify-between",
-                                                    skipQuiz ? "bg-white text-black border-white" : "bg-neutral-800 border-white/10 text-white/40"
-                                                )}>
-                                                    <div className="flex items-center gap-4">
-                                                        <Zap className={cn("w-6 h-6", skipQuiz ? "text-yellow-400" : "text-neutral-700")} />
-                                                        <div>
-                                                            <h3 className="font-mono font-black text-xs uppercase tracking-tighter">Pular Quiz (Só Admin)</h3>
-                                                            <p className="text-[8px] font-mono mt-1 uppercase opacity-60">Ignora o teste inicial</p>
-                                                        </div>
-                                                    </div>
-                                                    <label className="relative inline-flex items-center cursor-pointer scale-75">
-                                                        <input 
-                                                            type="checkbox" 
-                                                            checked={skipQuiz}
-                                                            onChange={(e) => setSkipQuiz(e.target.checked)}
-                                                            className="sr-only peer"
-                                                        />
-                                                        <div className="w-11 h-6 bg-black rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                                                    </label>
-                                                </div>
-
-                                                <div className={cn(
-                                                    "p-4 border-2 transition-all flex items-center justify-between",
-                                                    isQuestionsDisabled ? "bg-red-600 text-white border-red-600" : "bg-neutral-800 border-white/10 text-white/40"
-                                                )}>
-                                                    <div className="flex items-center gap-4">
-                                                        <ShieldAlert className={cn("w-6 h-6", isQuestionsDisabled ? "text-white" : "text-neutral-700")} />
-                                                        <div>
-                                                            <h3 className="font-mono font-black text-xs uppercase tracking-tighter">Desativar Quiz (Geral)</h3>
-                                                            <p className="text-[8px] font-mono mt-1 uppercase opacity-60">Bloqueio global desativado</p>
-                                                        </div>
-                                                    </div>
-                                                    <label className="relative inline-flex items-center cursor-pointer scale-75">
-                                                        <input 
-                                                            type="checkbox" 
-                                                            checked={isQuestionsDisabled}
-                                                            onChange={toggleQuestions}
-                                                            className="sr-only peer"
-                                                        />
-                                                        <div className="w-11 h-6 bg-black rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-white peer-checked:after:bg-black"></div>
-                                                    </label>
-                                                </div>
-                                        </div>
-                                    )}
-
                                     {adminTab === 'config' && (
                                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
